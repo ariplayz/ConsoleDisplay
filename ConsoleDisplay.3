@@ -1,0 +1,108 @@
+.TH ConsoleDisplay 3 "2025-11-12" "ConsoleDisplay 1.0.0" "C++ Library Manual"
+.SH NAME
+ConsoleDisplay \- 512x512 console grid for pixels and text
+
+.SH SYNOPSIS
+.nf
+#include <ConsoleDisplay/library.h>
+
+namespace console_display {
+  class ConsoleDisplay {
+  public:
+    static constexpr int WIDTH = 512;
+    static constexpr int HEIGHT = 512;
+
+    enum class CellType : std::uint8_t { Empty, Pixel, Text };
+
+    struct Cell {
+      CellType type;
+      bool     pixelOn;
+      char     ch;
+    };
+
+    ConsoleDisplay();
+    void clear();
+    void setPixel(int x, int y, bool on = true);
+    void setText(int x, int y, char ch);
+    void setTextString(int x, int y, const std::string& s);
+    void fillPixels(bool on);
+    Cell getCell(int x, int y) const;
+    std::string toString(char pixelChar = '#', char emptyChar = ' ') const;
+    void render(std::ostream& os) const;
+  };
+}
+.fi
+
+.SH DESCRIPTION
+ConsoleDisplay provides a simple 512x512 character grid that can be rendered
+to the console or converted to a string. Each cell may act either as a pixel
+(on/off) or as a text character. This is useful for prototyping ASCII/console
+visualizations and for unit tests that compare expected string output.
+
+.SH CONSTANTS
+.TP
+.B WIDTH, HEIGHT
+Both are 512. Valid coordinates are 0 <= x < WIDTH and 0 <= y < HEIGHT.
+
+.SH TYPES
+.TP
+.B enum class CellType { Empty, Pixel, Text }
+Cell role: unused, pixel, or text.
+.TP
+.B struct Cell
+Holds the cell's current state: type, pixel flag, and character.
+
+.SH METHODS
+.TP
+.B ConsoleDisplay()
+Constructs a new display and clears all cells to Empty.
+.TP
+.B void clear()
+Resets all cells to Empty with a space character.
+.TP
+.B void setPixel(int x, int y, bool on = true)
+Marks the cell as a Pixel; sets it on/off. Out-of-bounds coordinates are ignored.
+When on, the cell renders as the chosen pixel character (default '#'); otherwise as the empty character (default space).
+.TP
+.B void setText(int x, int y, char ch)
+Marks the cell as Text and stores the character. Out-of-bounds are ignored.
+.TP
+.B void setTextString(int x, int y, const std::string& s)
+Writes a string horizontally starting at (x, y). Stops at the right edge. If x < 0, the visible portion is clipped. If y is out of bounds, the call is ignored.
+.TP
+.B void fillPixels(bool on)
+Sets every cell to Pixel with the given on/off state.
+.TP
+.B Cell getCell(int x, int y) const
+Returns a copy of the cell at (x, y). If out of bounds, returns an Empty cell.
+.TP
+.B std::string toString(char pixelChar = '#', char emptyChar = ' ') const
+Converts the entire grid into a string of HEIGHT lines, each WIDTH characters long, separated by newlines. Pixel cells render as \fBpixelChar\fR if on, otherwise \fBemptyChar\fR. Text cells render as their stored character.
+.TP
+.B void render(std::ostream& os) const
+Streams the output of \fBtoString()\fR using default characters.
+
+.SH EXAMPLES
+.nf
+#include <iostream>
+#include <ConsoleDisplay/library.h>
+
+int main() {
+  console_display::ConsoleDisplay disp;
+  disp.setPixel(10, 10, true);
+  disp.setTextString(0, 0, "Hello");
+  disp.render(std::cout);
+}
+.fi
+
+.SH NOTES
+All operations silently ignore out-of-bounds coordinates for convenience.
+
+.SH VERSION
+This manual documents ConsoleDisplay version 1.0.0.
+
+.SH AUTHORS
+JetBrains Autonomous Programmer (Junie).
+
+.SH SEE ALSO
+std::ostream(3), std::string(3)
